@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio 3D</title>
+    <style>
+      :root {
+        font-family: "Poppins", "Segoe UI", sans-serif;
+        color: #f5f5f5;
+        background: radial-gradient(circle at top, #272a4f, #0d0e1c 55%, #05050a);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 300vh;
+        overflow-x: hidden;
+      }
+
+      #canvas-container {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      header.overlay {
+        position: fixed;
+        top: 5vh;
+        left: 8vw;
+        z-index: 2;
+        max-width: 420px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        text-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      }
+
+      header.overlay h1 {
+        font-size: clamp(2.5rem, 4vw, 3.5rem);
+        margin: 0;
+      }
+
+      header.overlay p {
+        margin: 0;
+        font-size: 1.05rem;
+        line-height: 1.4;
+      }
+
+      main {
+        position: relative;
+        z-index: 1;
+      }
+
+      section.panel {
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-end;
+        padding: 8vh 10vw;
+      }
+
+      section.panel .label {
+        font-size: clamp(1.2rem, 2vw, 1.6rem);
+        max-width: 480px;
+        padding: 1.5rem 2rem;
+        border-radius: 22px;
+        background: rgba(13, 14, 28, 0.65);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      }
+
+      section.panel:nth-child(odd) .label {
+        margin-left: auto;
+      }
+
+      #project-overlay {
+        position: fixed;
+        right: 8vw;
+        bottom: 12vh;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        z-index: 3;
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+      }
+
+      #project-overlay.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      #project-overlay button {
+        padding: 0.85rem 1.8rem;
+        border-radius: 999px;
+        border: none;
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        color: #0d0e1c;
+        background: linear-gradient(135deg, #f9d976, #f39f86);
+        box-shadow: 0 16px 30px rgba(243, 159, 134, 0.35);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      #project-overlay button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 22px 36px rgba(249, 217, 118, 0.4);
+      }
+
+      @media (max-width: 900px) {
+        header.overlay {
+          left: 5vw;
+          right: 5vw;
+        }
+
+        section.panel {
+          padding: 12vh 6vw;
+        }
+
+        #project-overlay {
+          right: 6vw;
+          bottom: 8vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="canvas-container"></div>
+    <header class="overlay">
+      <h1>Portfolio interactif</h1>
+      <p>
+        Faites défiler pour découvrir mon univers : un développeur plongé dans
+        son écran, mes projets et l'énergie créative qui m'animent.
+      </p>
+    </header>
+    <main>
+      <section class="panel intro">
+        <div class="label">
+          Arrivée dans le studio&nbsp;: rencontrez-moi face à face alors que je
+          code sur mon poste.
+        </div>
+      </section>
+      <section class="panel focus">
+        <div class="label">
+          Le scroll fait pivoter la caméra derrière moi&nbsp;: observez mon
+          clavier et l'écran où s'affiche «&nbsp;JAVA&nbsp;».
+        </div>
+      </section>
+      <section class="panel projects">
+        <div class="label">
+          Un dernier scroll zoome sur l'écran pour révéler des raccourcis vers
+          mes projets.
+        </div>
+      </section>
+    </main>
+    <div id="project-overlay">
+      <button type="button">Project&nbsp;1</button>
+      <button type="button">Project&nbsp;2</button>
+    </div>
+
+    <script type="module">
+      import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+      const container = document.getElementById("canvas-container");
+      const overlay = document.getElementById("project-overlay");
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x0a0b18, 0.18);
+
+      const camera = new THREE.PerspectiveCamera(
+        45,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100
+      );
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+
+      const keyLight = new THREE.DirectionalLight(0xf7e8c9, 0.85);
+      keyLight.position.set(-4, 6, 6);
+      keyLight.castShadow = true;
+      keyLight.shadow.mapSize.set(1024, 1024);
+      scene.add(keyLight);
+
+      const backLight = new THREE.DirectionalLight(0x4e5bff, 0.5);
+      backLight.position.set(6, 5, -4);
+      scene.add(backLight);
+
+      const floorGeometry = new THREE.PlaneGeometry(40, 40);
+      const floorMaterial = new THREE.MeshStandardMaterial({
+        color: 0x121427,
+        roughness: 0.8,
+        metalness: 0.2,
+      });
+      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.receiveShadow = true;
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -0.01;
+      scene.add(floor);
+
+      const woodMaterial = new THREE.MeshStandardMaterial({
+        color: 0x59392c,
+        roughness: 0.5,
+      });
+      const darkMaterial = new THREE.MeshStandardMaterial({
+        color: 0x11141f,
+        metalness: 0.4,
+        roughness: 0.3,
+      });
+      const fabricMaterial = new THREE.MeshStandardMaterial({
+        color: 0x33415c,
+        metalness: 0.1,
+        roughness: 0.7,
+      });
+      const skinMaterial = new THREE.MeshStandardMaterial({
+        color: 0xf0c7a7,
+        roughness: 0.6,
+      });
+
+      const workstation = new THREE.Group();
+      scene.add(workstation);
+
+      const deskTop = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.2, 1.4), woodMaterial);
+      deskTop.castShadow = true;
+      deskTop.receiveShadow = true;
+      deskTop.position.set(0, 1.05, 0);
+      workstation.add(deskTop);
+
+      const legGeometry = new THREE.BoxGeometry(0.2, 1, 0.2);
+      const legPositions = [
+        [-1.4, 0.55, 0.55],
+        [1.4, 0.55, 0.55],
+        [-1.4, 0.55, -0.55],
+        [1.4, 0.55, -0.55],
+      ];
+      legPositions.forEach(([x, y, z]) => {
+        const leg = new THREE.Mesh(legGeometry, woodMaterial);
+        leg.position.set(x, y, z);
+        leg.castShadow = true;
+        leg.receiveShadow = true;
+        workstation.add(leg);
+      });
+
+      const laptopBase = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.06, 0.8), darkMaterial);
+      laptopBase.position.set(0.2, 1.25, -0.1);
+      laptopBase.castShadow = true;
+      workstation.add(laptopBase);
+
+      const laptopScreen = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.7, 0.06), darkMaterial);
+      laptopScreen.position.set(0.2, 1.65, -0.45);
+      laptopScreen.castShadow = true;
+      laptopScreen.rotation.x = -0.22;
+      workstation.add(laptopScreen);
+
+      const screenCanvas = document.createElement("canvas");
+      screenCanvas.width = 512;
+      screenCanvas.height = 512;
+      const screenContext = screenCanvas.getContext("2d");
+      screenContext.fillStyle = "#090b16";
+      screenContext.fillRect(0, 0, screenCanvas.width, screenCanvas.height);
+      screenContext.fillStyle = "#12efc9";
+      screenContext.font = "bold 160px 'Fira Code', monospace";
+      screenContext.textAlign = "center";
+      screenContext.textBaseline = "middle";
+      screenContext.fillText("JAVA", screenCanvas.width / 2, screenCanvas.height / 2);
+      const screenTexture = new THREE.CanvasTexture(screenCanvas);
+      screenTexture.anisotropy = 8;
+      const screenMaterial = new THREE.MeshStandardMaterial({
+        map: screenTexture,
+        emissive: 0x135f74,
+        emissiveIntensity: 0.4,
+      });
+      const screenDisplay = new THREE.Mesh(new THREE.PlaneGeometry(0.98, 0.58), screenMaterial);
+      screenDisplay.position.set(0, 0, 0.04);
+      laptopScreen.add(screenDisplay);
+
+      const keyboard = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.04, 0.4), new THREE.MeshStandardMaterial({
+        color: 0x1e2237,
+        roughness: 0.4,
+      }));
+      keyboard.position.set(0.2, 1.3, 0.05);
+      keyboard.castShadow = true;
+      workstation.add(keyboard);
+
+      const chair = new THREE.Group();
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.14, 1.2), fabricMaterial);
+      seat.castShadow = true;
+      seat.position.set(1.2, 0.85, 0.25);
+      chair.add(seat);
+
+      const backrest = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.1, 0.15), fabricMaterial);
+      backrest.castShadow = true;
+      backrest.position.set(1.2, 1.4, -0.35);
+      backrest.rotation.x = 0.15;
+      chair.add(backrest);
+
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.2, 0.8, 16), darkMaterial);
+      base.position.set(1.2, 0.45, 0.25);
+      chair.add(base);
+
+      workstation.add(chair);
+
+      const character = new THREE.Group();
+      character.position.set(1.2, 1.45, 0.25);
+      workstation.add(character);
+
+      const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.38, 0.9, 12, 24), fabricMaterial);
+      torso.castShadow = true;
+      character.add(torso);
+
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 32, 32), skinMaterial);
+      head.position.set(0, 0.8, 0.05);
+      head.castShadow = true;
+      character.add(head);
+
+      const hair = new THREE.Mesh(new THREE.SphereGeometry(0.34, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({
+        color: 0x1a1a22,
+        roughness: 0.4,
+      }));
+      hair.position.copy(head.position).add(new THREE.Vector3(0, 0.08, 0));
+      character.add(hair);
+
+      const legMaterial = new THREE.MeshStandardMaterial({ color: 0x1b243b, roughness: 0.6 });
+
+      function createLeg(offsetX) {
+        const leg = new THREE.Group();
+        const upper = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.9, 18), legMaterial);
+        upper.castShadow = true;
+        upper.position.y = -0.5;
+        leg.add(upper);
+        const lower = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.14, 0.8, 18), legMaterial);
+        lower.castShadow = true;
+        lower.position.y = -0.95;
+        lower.rotation.x = -0.2;
+        upper.add(lower);
+        const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.16, 0.6), darkMaterial);
+        shoe.position.set(0, -0.45, 0.18);
+        lower.add(shoe);
+        leg.position.set(offsetX, -0.4, 0.05);
+        return leg;
+      }
+
+      const leftLeg = createLeg(-0.2);
+      const rightLeg = createLeg(0.2);
+      character.add(leftLeg);
+      character.add(rightLeg);
+
+      function createArm(isLeft) {
+        const arm = new THREE.Group();
+        const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.17, 18, 18), fabricMaterial);
+        shoulder.castShadow = true;
+        shoulder.position.set(isLeft ? -0.38 : 0.38, 0.4, 0.1);
+        arm.add(shoulder);
+
+        const upper = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.15, 0.65, 16), fabricMaterial);
+        upper.castShadow = true;
+        upper.position.set(0, -0.32, 0);
+        upper.rotation.z = isLeft ? 0.6 : -0.6;
+        arm.add(upper);
+
+        const lower = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.55, 16), skinMaterial);
+        lower.castShadow = true;
+        lower.position.set(isLeft ? -0.25 : 0.25, -0.3, 0);
+        lower.rotation.z = isLeft ? -0.2 : 0.2;
+        upper.add(lower);
+
+        const hand = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.1, 0.3), skinMaterial);
+        hand.position.set(isLeft ? -0.25 : 0.25, -0.22, 0.05);
+        lower.add(hand);
+
+        arm.userData = { upper, lower };
+        arm.position.set(shoulder.position.x, shoulder.position.y, shoulder.position.z);
+        return arm;
+      }
+
+      const leftArm = createArm(true);
+      const rightArm = createArm(false);
+      character.add(leftArm);
+      character.add(rightArm);
+
+      const screenGlow = new THREE.PointLight(0x12efc9, 0.8, 6, 2);
+      screenGlow.position.set(0.2, 1.6, -0.2);
+      workstation.add(screenGlow);
+
+      const cameraPositions = [
+        new THREE.Vector3(-3.2, 1.8, 4.2),
+        new THREE.Vector3(1.2, 1.9, -3.6),
+        new THREE.Vector3(0.9, 1.7, -1.05),
+      ];
+
+      const lookTargets = [
+        new THREE.Vector3(0.9, 1.4, 0.2),
+        new THREE.Vector3(0.9, 1.3, -0.2),
+        new THREE.Vector3(0.4, 1.5, -0.4),
+      ];
+
+      let scrollProgress = 0;
+
+      function updateScrollProgress() {
+        const maxScroll = document.body.scrollHeight - window.innerHeight;
+        scrollProgress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+        overlay.classList.toggle("visible", scrollProgress > 0.66);
+      }
+
+      window.addEventListener("scroll", updateScrollProgress, { passive: true });
+      updateScrollProgress();
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      const clock = new THREE.Clock();
+      const currentCameraPos = new THREE.Vector3();
+      const currentTarget = new THREE.Vector3();
+
+      function smoothStep(t) {
+        return t * t * (3 - 2 * t);
+      }
+
+      function interpolateVectors(vectors, progress) {
+        const segments = vectors.length - 1;
+        if (segments <= 0) return vectors[0].clone();
+        const scaled = THREE.MathUtils.clamp(progress, 0, 0.9999) * segments;
+        const index = Math.floor(scaled);
+        const localT = smoothStep(scaled - index);
+        const start = vectors[index];
+        const end = vectors[Math.min(index + 1, vectors.length - 1)];
+        return start.clone().lerp(end, localT);
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+
+        const camPos = interpolateVectors(cameraPositions, scrollProgress);
+        const camTarget = interpolateVectors(lookTargets, scrollProgress);
+
+        currentCameraPos.lerp(camPos, 0.08);
+        currentTarget.lerp(camTarget, 0.08);
+
+        camera.position.copy(currentCameraPos);
+        camera.lookAt(currentTarget);
+
+        const typingSpeed = 6;
+        const time = clock.elapsedTime * typingSpeed;
+        const typingAmplitude = 0.25;
+        const motion = Math.sin(time) * typingAmplitude;
+
+        leftArm.userData.upper.rotation.x = -1.2 + motion * 0.4;
+        rightArm.userData.upper.rotation.x = -1.15 - motion * 0.4;
+        leftArm.userData.lower.rotation.x = -0.3 + motion * 0.3;
+        rightArm.userData.lower.rotation.x = -0.3 - motion * 0.3;
+
+        head.rotation.y = Math.sin(clock.elapsedTime * 0.2) * 0.1;
+        torso.rotation.y = Math.sin(clock.elapsedTime * 0.15) * 0.05;
+
+        const focus = THREE.MathUtils.smoothstep(scrollProgress, 0.66, 1);
+        screenMaterial.emissiveIntensity = 0.4 + focus * 1.2;
+        screenGlow.intensity = 0.8 + focus * 1.4;
+
+        renderer.render(scene, camera);
+      }
+
+      currentCameraPos.copy(cameraPositions[0]);
+      currentTarget.copy(lookTargets[0]);
+      animate();
+    </script>
+  </body>
+</html>
