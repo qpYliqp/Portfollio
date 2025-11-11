@@ -1,0 +1,317 @@
+@font-face {
+  font-family: "PressStart";
+  src: url("https://fonts.cdnfonts.com/s/16216/PressStart2P.woff") format("woff");
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #050811;
+  color: #d9e1ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: #050811;
+}
+
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  color: #cdd5ff;
+}
+
+.canvas-wrapper {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+}
+
+.canvas-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, transparent 50%, rgba(0, 0, 0, 0.65) 100%);
+  pointer-events: none;
+}
+
+.scene-text {
+  position: absolute;
+  top: 16vh;
+  left: clamp(2rem, 10vw, 8rem);
+  max-width: 24rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  pointer-events: none;
+  text-shadow: 0 0 12px rgba(120, 155, 255, 0.4);
+}
+
+.retro-title {
+  font-family: "PressStart", monospace;
+  font-size: clamp(1rem, 2vw, 1.6rem);
+  margin: 0;
+  color: #97b7ff;
+  animation: flicker 2.4s infinite;
+}
+
+.retro-caption {
+  font-size: 0.75rem;
+  text-transform: none;
+  margin-top: 0.75rem;
+  color: rgba(205, 217, 255, 0.8);
+  letter-spacing: 0.08em;
+}
+
+.retro-stage {
+  margin: 0.75rem 0 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(174, 195, 255, 0.75);
+}
+
+.retro-stage-detail {
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: none;
+  margin-top: 0.5rem;
+  max-width: 22rem;
+  color: rgba(205, 217, 255, 0.88);
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 0.94;
+    text-shadow: 0 0 4px rgba(128, 170, 255, 0.9);
+  }
+  45% {
+    opacity: 1;
+    text-shadow: 0 0 10px rgba(178, 210, 255, 0.6);
+  }
+  60% {
+    opacity: 0.88;
+  }
+}
+
+.screen-readout {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  display: inline-block;
+  border: 1px solid rgba(142, 184, 255, 0.35);
+  background: linear-gradient(135deg, rgba(49, 61, 111, 0.5), rgba(19, 24, 48, 0.9));
+  box-shadow: 0 0 12px rgba(94, 133, 255, 0.4);
+  font-family: "PressStart", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  animation: scanline 6s linear infinite;
+}
+
+@keyframes scanline {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 0% 100%;
+  }
+}
+
+.project-overlay {
+  position: absolute;
+  inset: auto 0 6vh;
+  margin: 0 auto;
+  width: min(90vw, 60rem);
+  padding: 2.5rem clamp(1.5rem, 5vw, 3rem);
+  border: 1px solid rgba(126, 148, 255, 0.4);
+  background: rgba(10, 15, 36, 0.85);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.35);
+  border-radius: 22px;
+  backdrop-filter: blur(16px);
+  opacity: 0;
+  pointer-events: none;
+  transform: perspective(900px) rotateX(4deg);
+  transition: transform 0.6s ease;
+}
+
+.project-overlay h2 {
+  font-family: "PressStart", monospace;
+  font-size: clamp(0.9rem, 1.4vw, 1.1rem);
+  margin: 0 0 1.5rem;
+  color: #c7d6ff;
+  letter-spacing: 0.18em;
+}
+
+.screen-word {
+  color: #82a0ff;
+  font-family: "PressStart", monospace;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+  animation: glow 1.8s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    text-shadow: 0 0 6px rgba(140, 188, 255, 0.7);
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(200, 228, 255, 0.9);
+  }
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1.5rem;
+}
+
+.project-card {
+  padding: 1.6rem;
+  border-radius: 18px;
+  border: 1px solid rgba(126, 148, 255, 0.3);
+  background: linear-gradient(160deg, rgba(21, 29, 58, 0.85), rgba(37, 45, 80, 0.7));
+  box-shadow: inset 0 0 0 1px rgba(130, 158, 255, 0.1);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  perspective: 800px;
+  position: relative;
+  overflow: hidden;
+}
+
+.project-card:hover {
+  transform: translateY(-8px) rotateX(4deg);
+  box-shadow: 0 1.5rem 2.5rem rgba(24, 36, 79, 0.35);
+}
+
+.project-card::after {
+  content: "";
+  position: absolute;
+  inset: -30% 60% 30% -30%;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+  opacity: 0;
+  transform: translateX(-30%) skewX(-18deg);
+  transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+.project-card:hover::after {
+  opacity: 0.6;
+  transform: translateX(60%) skewX(-18deg);
+}
+
+.project-card .emoji {
+  font-size: 1.6rem;
+  display: block;
+  margin-bottom: 0.8rem;
+}
+
+.scroll-wrapper {
+  position: relative;
+  margin-top: 100vh;
+  padding-bottom: 200vh;
+}
+
+.panel {
+  width: min(52rem, 92vw);
+  margin: 30vh auto;
+  padding: clamp(2rem, 5vw, 3rem);
+  border-left: 4px solid rgba(134, 162, 255, 0.35);
+  background: rgba(8, 12, 28, 0.65);
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.35);
+}
+
+.panel h1,
+.panel h2 {
+  font-family: "PressStart", monospace;
+  letter-spacing: 0.18em;
+  margin-top: 0;
+  color: #c7d6ff;
+}
+
+.panel p {
+  line-height: 1.6;
+  font-size: 0.95rem;
+  color: rgba(205, 217, 255, 0.86);
+}
+
+.intro-name {
+  font-size: clamp(1.2rem, 2.6vw, 2rem);
+  text-shadow: 0 0 12px rgba(121, 152, 255, 0.6);
+  animation: subtle-vibration 2s ease-in-out infinite;
+}
+
+@keyframes subtle-vibration {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(1px);
+  }
+}
+
+@media (max-width: 768px) {
+  .scene-text {
+    top: 20vh;
+    max-width: 80vw;
+  }
+
+  .project-overlay {
+    bottom: 8vh;
+    width: calc(100vw - 2rem);
+    padding: 2rem;
+  }
+
+  .panel {
+    margin: 20vh auto;
+  }
+}
+
+@media (max-width: 540px) {
+  .canvas-wrapper {
+    position: relative;
+    height: auto;
+  }
+
+  .scene-text {
+    position: static;
+    margin: 4rem auto;
+    text-align: center;
+  }
+
+  .project-overlay {
+    position: static;
+    margin-top: 4rem;
+    opacity: 1 !important;
+    pointer-events: auto;
+  }
+
+  .scroll-wrapper {
+    margin-top: 0;
+    padding-bottom: 0;
+  }
+}
