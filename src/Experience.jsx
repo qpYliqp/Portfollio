@@ -8,12 +8,13 @@ import SceneElements from "./SceneElements.jsx";
 
 const targetProxy = { x: 0, y: 1.4, z: 0 };
 
-export default function Experience({ onScreenWordChange, onOverlayToggle }) {
+export default function Experience({ onScreenWordChange, onOverlayToggle, onSceneStageChange }) {
   const { camera } = useThree();
   const target = useMemo(() => new THREE.Vector3(), []);
   const screenMaterialRef = useRef();
   const screenLightRef = useRef();
   const neonRef = useRef();
+  const stageRef = useRef(0);
 
   useFrame(() => {
     target.set(targetProxy.x, targetProxy.y, targetProxy.z);
@@ -27,6 +28,8 @@ export default function Experience({ onScreenWordChange, onOverlayToggle }) {
     targetProxy.z = 0;
     onOverlayToggle(false);
     onScreenWordChange(0);
+    onSceneStageChange(0);
+    stageRef.current = 0;
 
     const mm = gsap.matchMedia();
 
@@ -44,6 +47,19 @@ export default function Experience({ onScreenWordChange, onOverlayToggle }) {
             scrub: true,
             pin: "#canvas-wrapper",
             anticipatePin: 1,
+            onUpdate: (self) => {
+              const progress = self.progress;
+              let stage = 0;
+              if (progress >= 0.25 && progress < 0.75) {
+                stage = 1;
+              } else if (progress >= 0.75) {
+                stage = 2;
+              }
+              if (stageRef.current !== stage) {
+                stageRef.current = stage;
+                onSceneStageChange(stage);
+              }
+            },
           },
         });
 
@@ -51,13 +67,13 @@ export default function Experience({ onScreenWordChange, onOverlayToggle }) {
           .to(targetProxy, { x: 0.5, y: 1.4, z: 0, duration: 1, ease: "none" }, 0)
           .to(camera.position, { x: -2.5, y: 2.3, z: 4.2, duration: 1, ease: "none" }, 1)
           .to(targetProxy, { x: -0.5, y: 1.3, z: 0, duration: 1, ease: "none" }, 1)
+          .call(() => onScreenWordChange(1), null, 1.1)
           .to(camera.position, { x: -0.2, y: 2, z: 1.3, duration: 1.2, ease: "none" }, 2.2)
           .to(targetProxy, { x: 0, y: 1.6, z: -1.5, duration: 1.2, ease: "none" }, 2.2)
           .to(screenMaterialRef.current, { emissiveIntensity: 2.5, duration: 1.2, ease: "none" }, 2)
           .to(screenLightRef.current, { intensity: 2.3, duration: 1.2, ease: "none" }, 2)
           .to(neonRef.current, { intensity: 1.5, duration: 1.2, ease: "none" }, 2)
-          .call(() => onScreenWordChange(1), null, 0.9)
-          .call(() => onScreenWordChange(2), null, 1.5)
+          .call(() => onScreenWordChange(2), null, 2.4)
           .call(() => onOverlayToggle(true), null, 2.8);
       });
 
@@ -67,7 +83,7 @@ export default function Experience({ onScreenWordChange, onOverlayToggle }) {
     return () => {
       mm.revert();
     };
-  }, [camera, onOverlayToggle, onScreenWordChange]);
+  }, [camera, onOverlayToggle, onSceneStageChange, onScreenWordChange]);
 
   return (
     <>

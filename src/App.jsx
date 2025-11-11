@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import Lenis from "@studio-freight/lenis";
 import gsap from "gsap";
@@ -14,7 +14,29 @@ const screenWords = ["Java", "Angular", "Docker"];
 export default function App() {
   const [screenWordIndex, setScreenWordIndex] = useState(0);
   const [overlayVisible, setOverlayVisible] = useState(false);
+  const [sceneStage, setSceneStage] = useState(0);
   const overlayRef = useRef(null);
+
+  const sceneCopy = useMemo(
+    () => [
+      {
+        subtitle: "Scène 1 — Présentation",
+        caption: "Le personnage se concentre sur son ordinateur dans une brume bleutée.",
+        showWord: false,
+      },
+      {
+        subtitle: "Scène 2 — Atelier de code",
+        caption: "La caméra contourne le bureau pour révéler l'écran et son flow de code rétro.",
+        showWord: true,
+      },
+      {
+        subtitle: "Scène 3 — Interface portfolio",
+        caption: "Entrez dans l'écran et explorez trois projets emblématiques.",
+        showWord: true,
+      },
+    ],
+    []
+  );
   useEffect(() => {
     const lenis = new Lenis({
       smoothWheel: true,
@@ -25,16 +47,46 @@ export default function App() {
     const updateScroll = () => ScrollTrigger.update();
     lenis.on("scroll", updateScroll);
 
+    ScrollTrigger.scrollerProxy(document.body, {
+      scrollTop(value) {
+        if (arguments.length) {
+          lenis.scrollTo(value, { immediate: true });
+        }
+        let scrollValue = window.scrollY;
+        if (typeof lenis.scroll === "number") {
+          scrollValue = lenis.scroll;
+        } else if (lenis.scroll && typeof lenis.scroll.value === "number") {
+          scrollValue = lenis.scroll.value;
+        }
+        return scrollValue;
+      },
+      getBoundingClientRect() {
+        return {
+          top: 0,
+          left: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        };
+      },
+      pinType: document.body.style.transform ? "transform" : "fixed",
+      fixedMarkers: true,
+    });
+
+    ScrollTrigger.defaults({ scroller: document.body });
+
     const gsapRaf = (time) => {
       lenis.raf(time * 1000);
     };
     gsap.ticker.add(gsapRaf);
     gsap.ticker.lagSmoothing(0);
 
+    ScrollTrigger.refresh();
+
     return () => {
       lenis.off("scroll", updateScroll);
       gsap.ticker.remove(gsapRaf);
       lenis.destroy();
+      ScrollTrigger.defaults({ scroller: window });
     };
   }, []);
 
@@ -62,13 +114,17 @@ export default function App() {
             <Experience
               onScreenWordChange={(index) => setScreenWordIndex(index)}
               onOverlayToggle={(state) => setOverlayVisible(state)}
+              onSceneStageChange={(stage) => setSceneStage(stage)}
             />
           </Suspense>
         </Canvas>
         <div className="grain-overlay" aria-hidden="true"></div>
         <div className="vignette" aria-hidden="true"></div>
         <Overlay ref={overlayRef} activeWord={screenWords[screenWordIndex]} />
-        <SceneText activeWord={screenWords[screenWordIndex]} />
+        <SceneText
+          activeWord={screenWords[sceneStage === 0 ? 0 : screenWordIndex]}
+          sceneInfo={sceneCopy[sceneStage]}
+        />
       </div>
       <main id="scroll-wrapper" className="scroll-wrapper">
         <section className="panel intro">

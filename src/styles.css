@@ -84,6 +84,23 @@ body {
   letter-spacing: 0.08em;
 }
 
+.retro-stage {
+  margin: 0.75rem 0 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(174, 195, 255, 0.75);
+}
+
+.retro-stage-detail {
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: none;
+  margin-top: 0.5rem;
+  max-width: 22rem;
+  color: rgba(205, 217, 255, 0.88);
+}
+
 @keyframes flicker {
   0%,
   100% {
