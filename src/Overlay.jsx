@@ -1,4 +1,4 @@
-import React, { forwardRef } from "https://esm.sh/react@18.2.0";
+import React, { forwardRef } from "react";
 
 const Overlay = forwardRef(function Overlay({ activeWord }, ref) {
   return (

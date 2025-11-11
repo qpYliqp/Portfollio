@@ -1,6 +1,6 @@
-import React, { useMemo, useRef } from "https://esm.sh/react@18.2.0";
-import * as THREE from "https://esm.sh/three@0.156.1";
-import { useFrame } from "https://esm.sh/@react-three/fiber@8.15.16?deps=three@0.156.1&bundle";
+import React, { useMemo, useRef } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
 
 function usePixelTexture(baseColor = "#9ab0ff") {
   return useMemo(() => {

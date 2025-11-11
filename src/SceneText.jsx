@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "https://esm.sh/react@18.2.0";
-import gsap from "https://esm.sh/gsap@3.12.5";
+import React, { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
 
 export default function SceneText({ activeWord }) {
   const wordRef = useRef(null);

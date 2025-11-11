@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useRef } from "https://esm.sh/react@18.2.0";
-import * as THREE from "https://esm.sh/three@0.156.1";
-import { useFrame, useThree } from "https://esm.sh/@react-three/fiber@8.15.16?deps=three@0.156.1&bundle";
-import gsap from "https://esm.sh/gsap@3.12.5";
-import { EffectComposer, Bloom, Noise, Vignette, ChromaticAberration } from "https://esm.sh/@react-three/postprocessing@2.18.7?deps=three@0.156.1&bundle";
+import React, { useEffect, useMemo, useRef } from "react";
+import * as THREE from "three";
+import { useFrame, useThree } from "@react-three/fiber";
+import gsap from "gsap";
+import { EffectComposer, Bloom, Noise, Vignette, ChromaticAberration } from "@react-three/postprocessing";
 
 import SceneElements from "./SceneElements.jsx";
 

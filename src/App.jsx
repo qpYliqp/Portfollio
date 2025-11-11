@@ -1,8 +1,8 @@
-import React, { Suspense, useEffect, useRef, useState } from "https://esm.sh/react@18.2.0";
-import { Canvas } from "https://esm.sh/@react-three/fiber@8.15.16?deps=three@0.156.1&bundle";
-import Lenis from "https://esm.sh/@studio-freight/lenis@1.0.26?bundle";
-import gsap from "https://esm.sh/gsap@3.12.5";
-import { ScrollTrigger } from "https://esm.sh/gsap@3.12.5/ScrollTrigger";
+import React, { Suspense, useEffect, useRef, useState } from "react";
+import { Canvas } from "@react-three/fiber";
+import Lenis from "@studio-freight/lenis";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Experience from "./Experience.jsx";
 import Overlay from "./Overlay.jsx";
 import SceneText from "./SceneText.jsx";
