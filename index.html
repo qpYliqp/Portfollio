@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio 3D</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Poppins", Arial, sans-serif;
+      color: #f5f5f5;
+      background: radial-gradient(circle at top, #1b1f3a 0%, #090b1a 55%, #03040d 100%);
+      overflow-x: hidden;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    .hero-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+      padding: clamp(1.5rem, 3vw, 3rem);
+      z-index: 2;
+    }
+
+    .overlay h1 {
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      margin: 0 0 0.5rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .overlay p {
+      margin: 0;
+      font-weight: 300;
+      max-width: min(40ch, 60vw);
+      line-height: 1.5;
+    }
+
+    .sections {
+      position: relative;
+      z-index: 1;
+    }
+
+    section {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: clamp(1.5rem, 3vw, 4rem);
+      backdrop-filter: blur(0px);
+    }
+
+    section:nth-child(1) {
+      justify-content: flex-end;
+    }
+
+    section:nth-child(2) {
+      justify-content: flex-start;
+    }
+
+    section:nth-child(3) {
+      justify-content: center;
+      text-align: center;
+    }
+
+    .tagline {
+      font-size: clamp(1rem, 2.2vw, 1.4rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8aa4ff;
+      margin-bottom: 1rem;
+    }
+
+    .cta {
+      display: inline-flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      pointer-events: auto;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .cta.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .cta button {
+      padding: 0.85rem 1.6rem;
+      background: rgba(33, 56, 133, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
+      color: #f2f4ff;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    }
+
+    .cta button:hover {
+      transform: translateY(-2px);
+      background: rgba(58, 86, 178, 0.95);
+      box-shadow: 0 16px 32px rgba(16, 32, 96, 0.35);
+    }
+
+    .scroll-hint {
+      position: fixed;
+      left: 50%;
+      bottom: 2rem;
+      transform: translateX(-50%);
+      font-size: 0.85rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+      .overlay {
+        padding: 2rem 1.5rem;
+      }
+
+      section {
+        justify-content: center;
+        text-align: center;
+      }
+
+      .overlay p {
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="scene" class="hero-canvas"></canvas>
+
+  <div class="overlay">
+    <div>
+      <div class="tagline">Développeur créatif</div>
+      <h1>Portfolio 3D</h1>
+      <p>
+        Une expérience immersive : suivez mon personnage alors qu'il se plonge dans son univers de code.
+        Faites défiler pour découvrir mes projets.
+      </p>
+    </div>
+  </div>
+
+  <div class="scroll-hint">Scroll pour continuer</div>
+
+  <main class="sections scroll-container">
+    <section>
+      <div>
+        <h2>Bienvenue</h2>
+        <p>Faites face à mon avatar numérique concentré, prêt à coder et à donner vie à vos idées.</p>
+      </div>
+    </section>
+    <section>
+      <div>
+        <h2>Au coeur du code</h2>
+        <p>Plongez derrière l'écran et observez l'énergie créative pendant que les lignes de code "JAVA" prennent forme.</p>
+      </div>
+    </section>
+    <section>
+      <div>
+        <h2>Mes projets</h2>
+        <p>Explorez les projets sur lesquels j'ai travaillé. Chaque bouton vous rapproche d'une nouvelle histoire à découvrir.</p>
+        <div class="cta" id="projectButtons">
+          <button>Project 1</button>
+          <button>Project 2</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r155/three.min.js" integrity="sha512-0J0jzicpvvV0BjAB5oTAHpuI9JDjfBJwpy9gn7P89wO6d7smlHuU4lE4pSmWXyrKBX39MCqpRS3j1WFfYrQS/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-dlprNmzg5XgI25BYEYHOgqnWOwdL4QSSeEkuk8vyGiST1H1zEULzCy0cLyvYEeUR2rN7vkymvEZuTFeonNoGxw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha512-/n8YXwkxJkC6lJ4atsNTJwnCvu2n9mTaYTZJvTh0daJVyGW0I5Sgg7zZzq5nZAAB7PWbpG/TIbwfFHCA2SfY1A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    const canvas = document.getElementById('scene');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x05060f, 0.12);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambient);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.1);
+    keyLight.position.set(4, 6, 4);
+    scene.add(keyLight);
+
+    const rimLight = new THREE.DirectionalLight(0x7ba4ff, 0.6);
+    rimLight.position.set(-3, 3, -2);
+    scene.add(rimLight);
+
+    const floorGeometry = new THREE.CircleGeometry(6, 64);
+    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x0b1026, roughness: 0.8, metalness: 0.1 });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -0.01;
+    scene.add(floor);
+
+    const studioGlow = new THREE.PointLight(0x1f4fff, 1.2, 10);
+    studioGlow.position.set(0, 2.2, 0.8);
+    scene.add(studioGlow);
+
+    const workstation = new THREE.Group();
+    scene.add(workstation);
+
+    // Desk
+    const deskGeometry = new THREE.BoxGeometry(3, 0.15, 1.2);
+    const deskMaterial = new THREE.MeshStandardMaterial({ color: 0x19203a, roughness: 0.4, metalness: 0.2 });
+    const desk = new THREE.Mesh(deskGeometry, deskMaterial);
+    desk.position.set(0, 0.75, 0);
+    desk.castShadow = desk.receiveShadow = true;
+    workstation.add(desk);
+
+    const deskLegGeometry = new THREE.BoxGeometry(0.15, 1.1, 0.15);
+    const legPositions = [
+      [-1.3, 0.2, -0.45],
+      [1.3, 0.2, -0.45],
+      [-1.3, 0.2, 0.45],
+      [1.3, 0.2, 0.45]
+    ];
+
+    legPositions.forEach(([x, y, z]) => {
+      const leg = new THREE.Mesh(deskLegGeometry, deskMaterial);
+      leg.position.set(x, y, z);
+      workstation.add(leg);
+    });
+
+    // Chair
+    const chairMaterial = new THREE.MeshStandardMaterial({ color: 0x0e132b, roughness: 0.6 });
+    const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.18, 1), chairMaterial);
+    chairSeat.position.set(-0.6, 0.5, 0);
+    workstation.add(chairSeat);
+
+    const chairBack = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.3, 0.18), chairMaterial);
+    chairBack.position.set(-0.6, 1.2, -0.4);
+    workstation.add(chairBack);
+
+    const chairBase = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.3, 0.35, 16), chairMaterial);
+    chairBase.position.set(-0.6, 0.25, 0);
+    workstation.add(chairBase);
+
+    // Character group
+    const character = new THREE.Group();
+    character.position.set(-0.6, 0.85, 0);
+    workstation.add(character);
+
+    const skinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd3a5, roughness: 0.5 });
+    const hoodieMaterial = new THREE.MeshStandardMaterial({ color: 0x394b9a, roughness: 0.35, metalness: 0.2 });
+    const pantMaterial = new THREE.MeshStandardMaterial({ color: 0x111521, roughness: 0.5 });
+
+    const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 0.9, 6, 12), hoodieMaterial);
+    torso.position.set(0, 0.2, 0);
+    torso.rotation.z = Math.PI / 20;
+    character.add(torso);
+
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 24, 24), skinMaterial);
+    head.position.set(0.35, 0.95, 0);
+    character.add(head);
+
+    const hair = new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 24, 0, Math.PI * 2, 0, Math.PI / 1.5),
+      new THREE.MeshStandardMaterial({ color: 0x0a0c16, roughness: 1 }));
+    hair.position.copy(head.position);
+    hair.position.y += 0.12;
+    character.add(hair);
+
+    const armGeometry = new THREE.CapsuleGeometry(0.15, 0.7, 8, 16);
+
+    const leftArm = new THREE.Mesh(armGeometry, hoodieMaterial);
+    leftArm.position.set(0.15, 0.25, 0.32);
+    leftArm.rotation.set(Math.PI / 3, 0, Math.PI / 6);
+    character.add(leftArm);
+
+    const rightArm = new THREE.Mesh(armGeometry, hoodieMaterial);
+    rightArm.position.set(0.15, 0.22, -0.32);
+    rightArm.rotation.set(Math.PI / 3, 0, -Math.PI / 6);
+    character.add(rightArm);
+
+    const handGeometry = new THREE.SphereGeometry(0.12, 16, 16);
+    const leftHand = new THREE.Mesh(handGeometry, skinMaterial);
+    leftHand.position.set(0.65, -0.05, 0.35);
+    character.add(leftHand);
+
+    const rightHand = new THREE.Mesh(handGeometry, skinMaterial);
+    rightHand.position.set(0.65, -0.05, -0.35);
+    character.add(rightHand);
+
+    const legGeometry = new THREE.CapsuleGeometry(0.2, 0.8, 8, 16);
+    const leftLeg = new THREE.Mesh(legGeometry, pantMaterial);
+    leftLeg.position.set(-0.1, -0.65, 0.2);
+    leftLeg.rotation.set(Math.PI / 2.2, 0, Math.PI / 32);
+    character.add(leftLeg);
+
+    const rightLeg = new THREE.Mesh(legGeometry, pantMaterial);
+    rightLeg.position.set(-0.1, -0.65, -0.2);
+    rightLeg.rotation.set(Math.PI / 2.3, 0, -Math.PI / 32);
+    character.add(rightLeg);
+
+    const shoeMaterial = new THREE.MeshStandardMaterial({ color: 0xf4f6ff, roughness: 0.6 });
+    const shoeGeometry = new THREE.BoxGeometry(0.4, 0.18, 0.25);
+
+    const leftShoe = new THREE.Mesh(shoeGeometry, shoeMaterial);
+    leftShoe.position.set(-0.6, -1.0, 0.2);
+    character.add(leftShoe);
+
+    const rightShoe = new THREE.Mesh(shoeGeometry, shoeMaterial);
+    rightShoe.position.set(-0.6, -1.0, -0.2);
+    character.add(rightShoe);
+
+    // Computer
+    const monitorFrameMaterial = new THREE.MeshStandardMaterial({ color: 0x111927, metalness: 0.6, roughness: 0.4 });
+    const monitorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.8, 0.05), monitorFrameMaterial);
+    monitorFrame.position.set(1.0, 1.3, 0);
+    workstation.add(monitorFrame);
+
+    const monitorStand = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.7, 12), monitorFrameMaterial);
+    monitorStand.position.set(1.0, 0.9, 0);
+    workstation.add(monitorStand);
+
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 0.05, 16), monitorFrameMaterial);
+    base.position.set(1.0, 0.57, 0);
+    workstation.add(base);
+
+    // Screen texture
+    const screenCanvas = document.createElement('canvas');
+    screenCanvas.width = 512;
+    screenCanvas.height = 512;
+    const screenCtx = screenCanvas.getContext('2d');
+
+    function updateScreenText(text, glow = false) {
+      screenCtx.clearRect(0, 0, screenCanvas.width, screenCanvas.height);
+      const gradient = screenCtx.createLinearGradient(0, 0, 0, screenCanvas.height);
+      gradient.addColorStop(0, '#0a1024');
+      gradient.addColorStop(1, '#0d1636');
+      screenCtx.fillStyle = gradient;
+      screenCtx.fillRect(0, 0, screenCanvas.width, screenCanvas.height);
+
+      screenCtx.fillStyle = glow ? '#8fd3ff' : '#f0f3ff';
+      screenCtx.font = 'bold 80px "Source Code Pro", monospace';
+      screenCtx.textAlign = 'center';
+      screenCtx.textBaseline = 'middle';
+      screenCtx.shadowColor = glow ? '#55a7ff' : 'rgba(0,0,0,0.2)';
+      screenCtx.shadowBlur = glow ? 40 : 10;
+      screenCtx.fillText(text, screenCanvas.width / 2, screenCanvas.height / 2);
+
+      screenTexture.needsUpdate = true;
+    }
+
+    const screenTexture = new THREE.CanvasTexture(screenCanvas);
+    screenTexture.anisotropy = 8;
+    const screenMaterial = new THREE.MeshBasicMaterial({ map: screenTexture });
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.18, 0.68), screenMaterial);
+    screen.position.copy(monitorFrame.position).add(new THREE.Vector3(0, 0, 0.028));
+    workstation.add(screen);
+
+    updateScreenText('Hello');
+
+    const keyboard = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.05, 0.3), new THREE.MeshStandardMaterial({ color: 0x1c2742 }));
+    keyboard.position.set(0.5, 0.83, 0.05);
+    workstation.add(keyboard);
+
+    const laptopLight = new THREE.RectAreaLight(0x87a4ff, 2, 1.1, 0.7);
+    laptopLight.position.set(1.0, 1.3, 0.2);
+    laptopLight.lookAt(new THREE.Vector3(0.3, 1.0, 0));
+    scene.add(laptopLight);
+
+    // Animation helpers
+    const camTarget = { x: 3.5, y: 2.2, z: 4.5, lx: 0.8, ly: 1.2, lz: 0 };
+
+    function resize() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      camera.position.set(camTarget.x, camTarget.y, camTarget.z);
+      camera.lookAt(camTarget.lx, camTarget.ly, camTarget.lz);
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    const buttons = document.getElementById('projectButtons');
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: '.scroll-container',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: true
+      }
+    });
+
+    tl.to(camTarget, {
+      x: 1.6,
+      y: 1.8,
+      z: -1.4,
+      lx: 0.4,
+      ly: 1.2,
+      lz: 0,
+      duration: 1.2,
+      ease: 'none'
+    }, 0);
+
+    tl.to(workstation.rotation, {
+      y: Math.PI / 2 + 0.2,
+      duration: 1.2,
+      ease: 'none'
+    }, 0);
+
+    tl.add(() => {
+      updateScreenText('JAVA', true);
+    }, 0.45);
+
+    tl.to(camTarget, {
+      x: 1.12,
+      y: 1.4,
+      z: -0.15,
+      lx: 1.0,
+      ly: 1.3,
+      lz: 0,
+      duration: 1.2,
+      ease: 'none'
+    }, 0.55);
+
+    tl.add(() => {
+      buttons.classList.add('visible');
+    }, 0.85);
+
+    ScrollTrigger.create({
+      trigger: '.scroll-container section:last-child',
+      start: 'top center',
+      onEnter: () => buttons.classList.add('visible'),
+      onLeaveBack: () => buttons.classList.remove('visible')
+    });
+
+    // Subtle idle animation
+    gsap.to(character.position, {
+      y: "+=0.05",
+      duration: 1.6,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    });
+
+    gsap.to([leftHand.position, rightHand.position], {
+      x: "+=0.06",
+      duration: 0.6,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    });
+
+    gsap.to(studioGlow, {
+      intensity: 1.6,
+      duration: 2.8,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    });
+  </script>
+</body>
+</html>
