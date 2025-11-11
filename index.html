@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio 3D - Yliane Villot</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+      :root {
+        color-scheme: dark;
+        --accent: #ffb347;
+        --bg: radial-gradient(circle at 10% 20%, #1a1a2e 0%, #121212 60%, #050505 100%);
+        --text: #f1f1f1;
+        --muted: rgba(241, 241, 241, 0.6);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Poppins", "Segoe UI", sans-serif;
+        color: var(--text);
+        background: var(--bg);
+        min-height: 300vh;
+        overflow-x: hidden;
+      }
+
+      canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+
+      .overlay {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        max-width: min(520px, 45vw);
+        padding: min(8vw, 5rem);
+        gap: 1.2rem;
+        transition: opacity 0.6s ease, transform 0.6s ease;
+      }
+
+      #introText {
+        align-items: flex-start;
+      }
+
+      #techText {
+        align-items: flex-start;
+        opacity: 0;
+        transform: translateX(4vw);
+      }
+
+      #projectsPanel {
+        align-items: center;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(6vh);
+        gap: 1.5rem;
+      }
+
+      h1 {
+        font-size: clamp(3rem, 8vw, 5rem);
+        margin: 0;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      p {
+        margin: 0;
+        font-size: clamp(1rem, 2.4vw, 1.35rem);
+        line-height: 1.6;
+        color: var(--muted);
+      }
+
+      .accent {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      .project-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        pointer-events: auto;
+      }
+
+      .project-buttons button {
+        padding: 0.85rem 1.75rem;
+        border-radius: 999px;
+        border: none;
+        background: rgba(255, 179, 71, 0.15);
+        color: var(--text);
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.3s ease;
+        backdrop-filter: blur(8px);
+      }
+
+      .project-buttons button:hover {
+        background: rgba(255, 179, 71, 0.28);
+        transform: translateY(-3px);
+      }
+
+      .scroll-indicator {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        text-transform: uppercase;
+        letter-spacing: 0.5em;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.35);
+        transition: opacity 0.4s ease;
+      }
+
+      body.stage-1 #introText {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      body.stage-1 .scroll-indicator {
+        opacity: 0.9;
+      }
+
+      body.stage-2 #introText {
+        opacity: 0;
+        transform: translateX(-4vw);
+      }
+
+      body.stage-2 #techText {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      body.stage-3 #techText {
+        opacity: 0;
+        transform: translateX(-4vw);
+      }
+
+      body.stage-3 #projectsPanel {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      body.stage-3 .scroll-indicator {
+        opacity: 0;
+      }
+
+      @media (max-width: 768px) {
+        .overlay {
+          max-width: none;
+          width: 100%;
+          padding: 4rem 2.5rem;
+        }
+
+        .project-buttons {
+          gap: 0.75rem;
+        }
+
+        .project-buttons button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body class="stage-1">
+    <canvas id="portfolio-canvas"></canvas>
+
+    <div class="overlay" id="introText">
+      <h1>Yliane Villot</h1>
+      <p>
+        Développeur passionné par les expériences immersives. Faites défiler pour
+        découvrir mon univers en <span class="accent">3D interactif</span>.
+      </p>
+    </div>
+
+    <div class="overlay" id="techText">
+      <h2>Stack &amp; Expertise</h2>
+      <p>
+        Java, Angular, Docker... Toujours prêt à explorer de nouveaux horizons
+        techniques et à donner vie aux interfaces ambitieuses.
+      </p>
+    </div>
+
+    <div class="overlay" id="projectsPanel">
+      <h2>Mes projets</h2>
+      <div class="project-buttons">
+        <button>Project 1</button>
+        <button>Project 2</button>
+        <button>Project 3</button>
+      </div>
+    </div>
+
+    <div class="scroll-indicator">Scroll</div>
+
+    <script type="module">
+      import * as THREE from "https://unpkg.com/three@0.155.0/build/three.module.js";
+
+      const canvas = document.getElementById("portfolio-canvas");
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: true,
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+      const scene = new THREE.Scene();
+
+      const camera = new THREE.PerspectiveCamera(
+        45,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100
+      );
+      camera.position.set(0, 1.6, 6.5);
+
+      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambient);
+      const keyLight = new THREE.DirectionalLight(0xfff3d6, 1.1);
+      keyLight.position.set(5, 6, 3);
+      scene.add(keyLight);
+      const rimLight = new THREE.DirectionalLight(0x6699ff, 0.6);
+      rimLight.position.set(-4, 5, -2);
+      scene.add(rimLight);
+
+      const floorGeometry = new THREE.CircleGeometry(10, 64);
+      const floorMaterial = new THREE.MeshStandardMaterial({
+        color: 0x1c1c28,
+        roughness: 0.9,
+        metalness: 0.1,
+      });
+      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = 0;
+      scene.add(floor);
+
+      const character = new THREE.Group();
+
+      const bodyMaterial = new THREE.MeshStandardMaterial({
+        color: 0x2f3c8f,
+        roughness: 0.4,
+        metalness: 0.2,
+      });
+      const skinMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffd7ba,
+        roughness: 0.6,
+      });
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.8, 0.7), bodyMaterial);
+      torso.position.y = 1.4;
+      character.add(torso);
+
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.55, 32, 32), skinMaterial);
+      head.position.y = 2.6;
+      head.position.z = 0.1;
+      character.add(head);
+
+      const legGeometry = new THREE.CylinderGeometry(0.22, 0.25, 1.6, 24);
+      const legMaterial = new THREE.MeshStandardMaterial({ color: 0x20223a, roughness: 0.7 });
+      const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+      leftLeg.position.set(-0.4, 0.4, 0.05);
+      character.add(leftLeg);
+      const rightLeg = leftLeg.clone();
+      rightLeg.position.x = 0.4;
+      character.add(rightLeg);
+
+      const armGeometry = new THREE.CylinderGeometry(0.16, 0.2, 1.4, 24);
+      const leftArm = new THREE.Mesh(armGeometry, bodyMaterial);
+      leftArm.rotation.z = Math.PI / 3.2;
+      leftArm.position.set(-0.9, 1.7, 0.25);
+      character.add(leftArm);
+
+      const rightArm = leftArm.clone();
+      rightArm.rotation.z = -Math.PI / 3.2;
+      rightArm.position.x = 0.9;
+      character.add(rightArm);
+
+      const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.22, 24, 24), skinMaterial);
+      leftHand.position.set(-1.15, 1.1, 0.65);
+      character.add(leftHand);
+      const rightHand = leftHand.clone();
+      rightHand.position.x = 1.15;
+      character.add(rightHand);
+
+      const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.25, 1.6), new THREE.MeshStandardMaterial({
+        color: 0x14142a,
+        roughness: 0.8,
+      }));
+      chairSeat.position.set(0, 0.3, -0.5);
+      character.add(chairSeat);
+
+      const chairBack = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.2, 0.2), new THREE.MeshStandardMaterial({
+        color: 0x1c1c34,
+        roughness: 0.7,
+      }));
+      chairBack.position.set(0, 1.2, -1.2);
+      character.add(chairBack);
+
+      scene.add(character);
+
+      const desk = new THREE.Mesh(new THREE.BoxGeometry(6, 0.3, 2.8), new THREE.MeshStandardMaterial({
+        color: 0x181820,
+        roughness: 0.8,
+      }));
+      desk.position.set(0, 1.15, 0.8);
+      scene.add(desk);
+
+      const keyboard = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.12, 0.9), new THREE.MeshStandardMaterial({
+        color: 0x2a2a3f,
+        roughness: 0.6,
+      }));
+      keyboard.position.set(0, 1.31, 1.05);
+      scene.add(keyboard);
+
+      const screenCanvas = document.createElement("canvas");
+      screenCanvas.width = 512;
+      screenCanvas.height = 320;
+      const screenCtx = screenCanvas.getContext("2d");
+
+      function drawScreenBackground() {
+        const gradient = screenCtx.createLinearGradient(0, 0, 512, 320);
+        gradient.addColorStop(0, "#1a1f3b");
+        gradient.addColorStop(1, "#0b0d1c");
+        screenCtx.fillStyle = gradient;
+        screenCtx.fillRect(0, 0, 512, 320);
+        screenCtx.fillStyle = "rgba(255,255,255,0.06)";
+        for (let i = 0; i < 6; i++) {
+          const y = 30 + i * 45;
+          screenCtx.fillRect(30, y, 452, 2);
+        }
+      }
+
+      function drawTextBlock(title, lines = []) {
+        screenCtx.fillStyle = "#ffb347";
+        screenCtx.font = "bold 48px 'Poppins', sans-serif";
+        screenCtx.fillText(title, 40, 90);
+        screenCtx.fillStyle = "rgba(255,255,255,0.85)";
+        screenCtx.font = "28px 'Poppins', sans-serif";
+        lines.forEach((line, index) => {
+          screenCtx.fillText(line, 40, 150 + index * 44);
+        });
+      }
+
+      function drawButtons(labels) {
+        const buttonWidth = 140;
+        const buttonHeight = 60;
+        const spacing = 30;
+        const startX = 60;
+        const y = 200;
+        labels.forEach((label, index) => {
+          const x = startX + index * (buttonWidth + spacing);
+          screenCtx.fillStyle = "rgba(255, 179, 71, 0.2)";
+          screenCtx.strokeStyle = "rgba(255, 179, 71, 0.75)";
+          screenCtx.lineWidth = 3;
+          screenCtx.beginPath();
+          screenCtx.roundRect(x, y, buttonWidth, buttonHeight, 20);
+          screenCtx.fill();
+          screenCtx.stroke();
+          screenCtx.fillStyle = "#ffffff";
+          screenCtx.font = "26px 'Poppins', sans-serif";
+          const textMetrics = screenCtx.measureText(label);
+          screenCtx.fillText(label, x + (buttonWidth - textMetrics.width) / 2, y + 38);
+        });
+      }
+
+      const screenTexture = new THREE.CanvasTexture(screenCanvas);
+      screenTexture.anisotropy = 4;
+      const screenMaterial = new THREE.MeshStandardMaterial({
+        map: screenTexture,
+        emissive: 0x0b0d1c,
+        emissiveIntensity: 0.8,
+        roughness: 0.4,
+        metalness: 0.1,
+      });
+
+      const screen = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 2.2), screenMaterial);
+      screen.position.set(0, 2.2, -0.45);
+      screen.rotation.x = -Math.PI / 14;
+      desk.add(screen);
+
+      const screenFrame = new THREE.Mesh(new THREE.BoxGeometry(3.7, 2.4, 0.12), new THREE.MeshStandardMaterial({
+        color: 0x0d0d1a,
+        roughness: 0.7,
+      }));
+      screenFrame.position.set(0, 2.2, -0.52);
+      desk.add(screenFrame);
+
+      let currentScreenMode = -1;
+      function updateScreen(mode) {
+        if (currentScreenMode === mode) return;
+        currentScreenMode = mode;
+        screenCtx.clearRect(0, 0, screenCanvas.width, screenCanvas.height);
+        drawScreenBackground();
+        switch (mode) {
+          case 0:
+            drawTextBlock("Bonjour !", ["Bienvenue sur mon portfolio.", "Faites défiler pour en voir plus."]); break;
+          case 1:
+            drawTextBlock("JAVA", ["ANGULAR", "DOCKER"]);
+            break;
+          default:
+            drawTextBlock("Projets", []);
+            drawButtons(["Project 1", "Project 2", "Project 3"]);
+            break;
+        }
+        screenTexture.needsUpdate = true;
+      }
+
+      updateScreen(0);
+
+      const targetPositions = [
+        new THREE.Vector3(0, 1.5, 0.2),
+        new THREE.Vector3(0, 1.4, 0.4),
+        new THREE.Vector3(0, 2.05, -0.2),
+      ];
+
+      const cameraPositions = [
+        new THREE.Vector3(0, 1.8, 7),
+        new THREE.Vector3(1.2, 1.9, 1.6),
+        new THREE.Vector3(0.1, 2.1, 0.5),
+      ];
+
+      const characterPositions = [
+        new THREE.Vector3(1.4, 0, 0),
+        new THREE.Vector3(-1.2, 0, 0),
+        new THREE.Vector3(-1.25, 0, 0),
+      ];
+
+      const characterRotations = [0, Math.PI * 0.35, Math.PI * 0.35];
+
+      const tmpVec = new THREE.Vector3();
+      const tmpTarget = new THREE.Vector3();
+
+      function easeInOut(t) {
+        return t * t * (3 - 2 * t);
+      }
+
+      let currentStage = 0;
+      const bodyEl = document.body;
+
+      function updateStage(progress) {
+        let stage = 0;
+        if (progress > 0.7) {
+          stage = 2;
+        } else if (progress > 0.35) {
+          stage = 1;
+        }
+        if (stage !== currentStage) {
+          currentStage = stage;
+          bodyEl.classList.remove("stage-1", "stage-2", "stage-3");
+          bodyEl.classList.add(`stage-${stage + 1}`);
+          updateScreen(stage);
+        }
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const maxScroll = document.body.scrollHeight - window.innerHeight;
+        const scrollProgress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+        updateStage(scrollProgress);
+
+        let segmentProgress = 0;
+        let startIndex = 0;
+        if (scrollProgress < 0.5) {
+          segmentProgress = scrollProgress / 0.5;
+          startIndex = 0;
+        } else {
+          segmentProgress = (scrollProgress - 0.5) / 0.5;
+          startIndex = 1;
+        }
+        segmentProgress = THREE.MathUtils.clamp(segmentProgress, 0, 1);
+
+        const startCam = cameraPositions[startIndex];
+        const endCam = cameraPositions[startIndex + 1] || cameraPositions[startIndex];
+        const startTarget = targetPositions[startIndex];
+        const endTarget = targetPositions[startIndex + 1] || targetPositions[startIndex];
+        const startCharacter = characterPositions[startIndex];
+        const endCharacter = characterPositions[startIndex + 1] || characterPositions[startIndex];
+        const startRotation = characterRotations[startIndex];
+        const endRotation = characterRotations[startIndex + 1] || characterRotations[startIndex];
+
+        tmpVec.copy(startCam).lerp(endCam, easeInOut(segmentProgress));
+        camera.position.copy(tmpVec);
+
+        tmpTarget.copy(startTarget).lerp(endTarget, easeInOut(segmentProgress));
+        camera.lookAt(tmpTarget);
+
+        character.position.copy(startCharacter).lerp(endCharacter, easeInOut(segmentProgress));
+        character.rotation.y = THREE.MathUtils.lerp(
+          startRotation,
+          endRotation,
+          easeInOut(segmentProgress)
+        );
+
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      window.addEventListener("resize", () => {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+      });
+    </script>
+  </body>
+</html>
