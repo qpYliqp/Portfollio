@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yliane Villot · Portfolio 3D</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0d0f17;
+        --accent: #f4c95d;
+        --text-muted: rgba(255, 255, 255, 0.72);
+        --text-strong: rgba(255, 255, 255, 0.92);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Inter", "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text-muted);
+        height: 100%;
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-height: 300vh;
+        overflow-x: hidden;
+      }
+
+      #canvas-container {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      canvas {
+        display: block;
+      }
+
+      .overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: min(9vw, 6rem);
+        pointer-events: none;
+        mix-blend-mode: lighten;
+      }
+
+      .panel {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+        max-width: 500px;
+      }
+
+      .panel.active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      h1 {
+        font-size: clamp(3rem, 8vw, 5.5rem);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 1.5rem;
+      }
+
+      h2 {
+        font-size: clamp(2.5rem, 6vw, 4rem);
+        color: var(--accent);
+        margin-bottom: 1rem;
+      }
+
+      p {
+        line-height: 1.6;
+        font-size: 1.05rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .skills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .skill-tag {
+        background: rgba(244, 201, 93, 0.15);
+        border: 1px solid rgba(244, 201, 93, 0.3);
+        border-radius: 999px;
+        padding: 0.4rem 1rem;
+        font-size: 0.95rem;
+        color: var(--text-strong);
+      }
+
+      .projects {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1.25rem;
+        pointer-events: auto;
+      }
+
+      .project-button {
+        position: relative;
+        border: none;
+        border-radius: 18px;
+        padding: 1.5rem 1rem 1.25rem;
+        background: rgba(14, 22, 38, 0.8);
+        color: var(--text-strong);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: inset 0 0 0 1px rgba(244, 201, 93, 0.25),
+          0 18px 35px rgba(6, 10, 18, 0.35);
+        transition: transform 0.25s ease, box-shadow 0.25s ease,
+          color 0.25s ease;
+      }
+
+      .project-button span {
+        display: block;
+        margin-bottom: 0.4rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.85rem;
+        color: rgba(244, 201, 93, 0.75);
+      }
+
+      .project-button:hover {
+        transform: translateY(-6px);
+        box-shadow: inset 0 0 0 1px rgba(244, 201, 93, 0.55),
+          0 25px 40px rgba(6, 10, 18, 0.55);
+      }
+
+      .project-button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 4px;
+      }
+
+      .footer-note {
+        margin-top: 2rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      @media (max-width: 900px) {
+        .overlay {
+          padding: 4rem 2.5rem;
+          justify-content: flex-end;
+          background: linear-gradient(180deg, rgba(13, 15, 23, 0.1), var(--bg));
+        }
+
+        .panel {
+          max-width: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="canvas-container"></div>
+    <div class="overlay">
+      <section class="panel" data-stage="0">
+        <h1>Yliane Villot</h1>
+        <p>
+          Développeur polyvalent passionné par l'innovation. Je combine le design
+          immersif, le code et les expériences interactives pour créer des
+          interfaces mémorables.
+        </p>
+        <p>
+          Faites défiler pour découvrir mon univers 3D, mon stack technique et
+          mes projets phares.
+        </p>
+      </section>
+
+      <section class="panel" data-stage="1">
+        <h2>Stack &amp; Expertise</h2>
+        <p>
+          J'adore concevoir des expériences fluides, performantes et visuelles.
+          Voici un aperçu des technologies que j'utilise au quotidien.
+        </p>
+        <div class="skills">
+          <span class="skill-tag">Java</span>
+          <span class="skill-tag">Spring Boot</span>
+          <span class="skill-tag">Angular</span>
+          <span class="skill-tag">TypeScript</span>
+          <span class="skill-tag">Three.js</span>
+          <span class="skill-tag">Docker</span>
+        </div>
+      </section>
+
+      <section class="panel" data-stage="2">
+        <h2>Projets</h2>
+        <p>
+          Explorez quelques projets interactifs qui mettent en avant mes
+          compétences techniques et mon approche orientée produit.
+        </p>
+        <div class="projects">
+          <button class="project-button">
+            <span>Project 1</span>
+            Plateforme de gestion de ressources avec visualisation 3D.
+          </button>
+          <button class="project-button">
+            <span>Project 2</span>
+            Application Java dédiée à l'automatisation d'équipes agiles.
+          </button>
+          <button class="project-button">
+            <span>Project 3</span>
+            Dashboard Angular temps réel pour données IoT.
+          </button>
+        </div>
+        <p class="footer-note">Scroll pour revenir en haut</p>
+      </section>
+    </div>
+
+    <script type="module">
+      import * as THREE from "https://cdn.skypack.dev/three@0.152.0";
+
+      const container = document.getElementById("canvas-container");
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x090b12);
+
+      const camera = new THREE.PerspectiveCamera(
+        45,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100
+      );
+      camera.position.set(6, 3.5, 9);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio || 1);
+      container.appendChild(renderer.domElement);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+      scene.add(ambientLight);
+
+      const rimLight = new THREE.DirectionalLight(0xf4c95d, 0.85);
+      rimLight.position.set(5, 6, 5);
+      scene.add(rimLight);
+
+      const backLight = new THREE.DirectionalLight(0x84a1ff, 0.55);
+      backLight.position.set(-6, 4, -4);
+      scene.add(backLight);
+
+      const floorGeometry = new THREE.PlaneGeometry(60, 60);
+      const floorMaterial = new THREE.MeshStandardMaterial({
+        color: 0x10131f,
+        roughness: 0.95,
+        metalness: 0.1,
+      });
+      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -1.25;
+      scene.add(floor);
+
+      const workstation = createWorkstation();
+      scene.add(workstation.group);
+
+      const overlay = document.querySelector(".overlay");
+      const panels = [...document.querySelectorAll(".panel")];
+
+      const scrollKeyframes = [
+        {
+          progress: 0,
+          position: new THREE.Vector3(6, 3.5, 9),
+          target: new THREE.Vector3(0, 1.8, 0),
+          rotation: 0,
+          screenText: "",
+        },
+        {
+          progress: 0.45,
+          position: new THREE.Vector3(-4.5, 3.2, 3.4),
+          target: new THREE.Vector3(0, 1.6, 0),
+          rotation: Math.PI,
+          screenText: "JAVA",
+        },
+        {
+          progress: 1,
+          position: new THREE.Vector3(-1.2, 2.4, 0.9),
+          target: new THREE.Vector3(0, 1.9, -0.6),
+          rotation: Math.PI,
+          screenText: "PROJECT 1\nPROJECT 2\nPROJECT 3",
+        },
+      ];
+
+      const lookTarget = new THREE.Vector3();
+      const tempVector = new THREE.Vector3();
+
+      let currentStage = 0;
+
+      function updatePanels(stage) {
+        if (stage === currentStage) return;
+        currentStage = stage;
+        panels.forEach((panel, index) => {
+          if (index === stage) {
+            panel.classList.add("active");
+          } else {
+            panel.classList.remove("active");
+          }
+        });
+        overlay.style.pointerEvents = stage === 2 ? "auto" : "none";
+      }
+
+      updatePanels(0);
+
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      window.addEventListener("resize", onWindowResize);
+
+      function getScrollProgress() {
+        const scrollable = document.body.scrollHeight - window.innerHeight;
+        return scrollable <= 0 ? 0 : window.scrollY / scrollable;
+      }
+
+      function getKeyframeData(progress) {
+        for (let i = 0; i < scrollKeyframes.length - 1; i++) {
+          const start = scrollKeyframes[i];
+          const end = scrollKeyframes[i + 1];
+          if (progress >= start.progress && progress <= end.progress) {
+            const alpha =
+              (progress - start.progress) / (end.progress - start.progress);
+            return { start, end, alpha };
+          }
+        }
+        const lastIndex = scrollKeyframes.length - 1;
+        return {
+          start: scrollKeyframes[lastIndex - 1],
+          end: scrollKeyframes[lastIndex],
+          alpha: 1,
+        };
+      }
+
+      function updateSceneByScroll() {
+        const progress = getScrollProgress();
+        const { start, end, alpha } = getKeyframeData(progress);
+
+        camera.position.lerpVectors(start.position, end.position, alpha);
+        tempVector.lerpVectors(start.target, end.target, alpha);
+        lookTarget.copy(tempVector);
+        camera.lookAt(lookTarget);
+
+        workstation.group.rotation.y = THREE.MathUtils.lerp(
+          start.rotation,
+          end.rotation,
+          alpha
+        );
+
+        const stage = progress < 0.25 ? 0 : progress < 0.7 ? 1 : 2;
+        updatePanels(stage);
+
+        const screenLabel =
+          alpha > 0.35 ? end.screenText : start.screenText || "";
+        workstation.updateScreen(screenLabel);
+      }
+
+      const clock = new THREE.Clock();
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const elapsed = clock.getElapsedTime();
+        workstation.animate(elapsed);
+        updateSceneByScroll();
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      function createWorkstation() {
+        const group = new THREE.Group();
+        group.position.y = 0;
+
+        const skinMaterial = new THREE.MeshStandardMaterial({
+          color: 0xffe1c5,
+          roughness: 0.45,
+        });
+        const shirtMaterial = new THREE.MeshStandardMaterial({
+          color: 0x243049,
+          roughness: 0.5,
+        });
+        const pantMaterial = new THREE.MeshStandardMaterial({
+          color: 0x161d2b,
+          roughness: 0.8,
+        });
+        const laptopMaterial = new THREE.MeshStandardMaterial({
+          color: 0x0f1626,
+          metalness: 0.4,
+          roughness: 0.25,
+        });
+        const deskMaterial = new THREE.MeshStandardMaterial({
+          color: 0x121826,
+          roughness: 0.85,
+        });
+
+        const torso = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.7, 0.9, 2.3, 32),
+          shirtMaterial
+        );
+        torso.position.y = 1.15;
+        group.add(torso);
+
+        const head = new THREE.Mesh(
+          new THREE.SphereGeometry(0.55, 32, 32),
+          skinMaterial
+        );
+        head.position.set(0, 2.35, 0.15);
+        group.add(head);
+
+        const hair = new THREE.Mesh(
+          new THREE.SphereGeometry(0.57, 32, 32, 0, Math.PI * 2, 0, Math.PI / 1.6),
+          new THREE.MeshStandardMaterial({ color: 0x1b2438, roughness: 0.6 })
+        );
+        hair.position.copy(head.position);
+        group.add(hair);
+
+        const legGeometry = new THREE.CylinderGeometry(0.28, 0.35, 1.8, 24);
+        const leftLeg = new THREE.Mesh(legGeometry, pantMaterial);
+        leftLeg.position.set(-0.28, 0, 0.25);
+        group.add(leftLeg);
+        const rightLeg = leftLeg.clone();
+        rightLeg.position.x *= -1;
+        group.add(rightLeg);
+
+        const footGeometry = new THREE.BoxGeometry(0.55, 0.25, 1.1);
+        const shoeMaterial = new THREE.MeshStandardMaterial({
+          color: 0xf4c95d,
+          roughness: 0.2,
+        });
+        const leftFoot = new THREE.Mesh(footGeometry, shoeMaterial);
+        leftFoot.position.set(-0.28, -0.9, 0.55);
+        group.add(leftFoot);
+        const rightFoot = leftFoot.clone();
+        rightFoot.position.x *= -1;
+        group.add(rightFoot);
+
+        const desk = new THREE.Mesh(
+          new THREE.BoxGeometry(5, 0.2, 2.5),
+          deskMaterial
+        );
+        desk.position.set(0, 0.85, -1.1);
+        group.add(desk);
+
+        const deskSupport = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.4, 0.4, 1.6, 24),
+          deskMaterial
+        );
+        deskSupport.position.set(0, 0, -1.1);
+        group.add(deskSupport);
+
+        const chairBase = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.1, 1.1, 0.25, 24),
+          pantMaterial
+        );
+        chairBase.position.set(0, 0.25, 0.2);
+        group.add(chairBase);
+
+        const laptopBase = new THREE.Mesh(
+          new THREE.BoxGeometry(2.6, 0.1, 1.9),
+          laptopMaterial
+        );
+        laptopBase.position.set(0, 1.2, -0.8);
+        group.add(laptopBase);
+
+        const keyboard = new THREE.Mesh(
+          new THREE.PlaneGeometry(2.4, 1.2),
+          new THREE.MeshStandardMaterial({
+            color: 0x1c2639,
+            roughness: 0.3,
+            metalness: 0.2,
+          })
+        );
+        keyboard.rotation.x = -Math.PI / 2;
+        keyboard.position.set(0, 1.25, -0.85);
+        group.add(keyboard);
+
+        const keyboardGlow = new THREE.Mesh(
+          new THREE.PlaneGeometry(2.2, 1),
+          new THREE.MeshBasicMaterial({
+            color: 0xf4c95d,
+            transparent: true,
+            opacity: 0.1,
+          })
+        );
+        keyboardGlow.rotation.x = -Math.PI / 2;
+        keyboardGlow.position.set(0, 1.26, -0.85);
+        group.add(keyboardGlow);
+
+        const screenTexture = createScreenTexture("", 512, 512);
+        const screenMaterial = new THREE.MeshBasicMaterial({
+          map: screenTexture,
+          transparent: true,
+        });
+
+        const laptopScreen = new THREE.Mesh(
+          new THREE.PlaneGeometry(2.6, 1.7),
+          screenMaterial
+        );
+        laptopScreen.position.set(0, 2.1, -1.65);
+        laptopScreen.rotation.x = THREE.MathUtils.degToRad(12);
+        group.add(laptopScreen);
+
+        const stand = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.2, 0.25, 0.9, 16),
+          laptopMaterial
+        );
+        stand.position.set(0, 1.65, -1.3);
+        group.add(stand);
+
+        const handGeometry = new THREE.SphereGeometry(0.23, 16, 16);
+        const armGeometry = new THREE.CylinderGeometry(0.18, 0.18, 1.3, 16);
+
+        const leftArm = new THREE.Group();
+        const leftUpper = new THREE.Mesh(armGeometry, shirtMaterial);
+        leftUpper.position.y = -0.65;
+        leftArm.add(leftUpper);
+        const leftHand = new THREE.Mesh(handGeometry, skinMaterial);
+        leftHand.position.set(0, -1.2, 0);
+        leftArm.add(leftHand);
+        leftArm.position.set(-0.65, 1.8, -0.2);
+        leftArm.rotation.z = THREE.MathUtils.degToRad(30);
+        group.add(leftArm);
+
+        const rightArm = leftArm.clone();
+        rightArm.position.x *= -1;
+        rightArm.rotation.z = THREE.MathUtils.degToRad(-30);
+        group.add(rightArm);
+
+        const screenLines = [];
+
+        function createScreenTexture(text, width, height) {
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          const gradient = ctx.createLinearGradient(0, 0, width, height);
+          gradient.addColorStop(0, "#102a3d");
+          gradient.addColorStop(1, "#081421");
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, width, height);
+
+          ctx.shadowColor = "rgba(244, 201, 93, 0.65)";
+          ctx.shadowBlur = 16;
+          ctx.fillStyle = "rgba(244, 201, 93, 0.85)";
+          ctx.font = `${Math.floor(height * 0.14)}px 'Space Mono', monospace`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          const lines = text.split("\n").filter(Boolean);
+          screenLines.length = 0;
+          screenLines.push(...lines);
+
+          if (lines.length === 0) {
+            ctx.font = `${Math.floor(height * 0.1)}px 'Space Mono', monospace`;
+            ctx.fillStyle = "rgba(244, 201, 93, 0.6)";
+            ctx.fillText("Hello, world!", width / 2, height / 2);
+          } else {
+            const lineHeight = height * 0.2;
+            const startY = height / 2 - ((lines.length - 1) * lineHeight) / 2;
+            lines.forEach((line, idx) => {
+              ctx.fillText(line, width / 2, startY + idx * lineHeight);
+            });
+          }
+
+          return new THREE.CanvasTexture(canvas);
+        }
+
+        let currentScreenText = "";
+
+        function updateScreen(text) {
+          if (text === currentScreenText) return;
+          currentScreenText = text;
+          const texture = createScreenTexture(text, 512, 512);
+          texture.needsUpdate = true;
+          screenMaterial.map = texture;
+          screenMaterial.needsUpdate = true;
+        }
+
+        function animateHands(elapsed) {
+          const typingStrength = Math.sin(elapsed * 6) * 0.12;
+          leftArm.rotation.x = THREE.MathUtils.degToRad(-25) + typingStrength;
+          rightArm.rotation.x = THREE.MathUtils.degToRad(-28) - typingStrength;
+          leftArm.rotation.y = THREE.MathUtils.degToRad(8);
+          rightArm.rotation.y = THREE.MathUtils.degToRad(-8);
+          leftArm.position.y = 1.85 + Math.sin(elapsed * 4) * 0.03;
+          rightArm.position.y = 1.85 + Math.cos(elapsed * 4) * 0.03;
+        }
+
+        function animate(elapsed) {
+          animateHands(elapsed);
+          const glow = 0.08 + (Math.sin(elapsed * 2.5) + 1) * 0.04;
+          keyboardGlow.material.opacity = glow;
+        }
+
+        return {
+          group,
+          updateScreen,
+          animate,
+        };
+      }
+    </script>
+  </body>
+</html>
